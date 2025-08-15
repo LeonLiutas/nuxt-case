@@ -8,6 +8,9 @@ export default defineNuxtConfig({
   vite: {
     plugins: [tailwindcss()],
   },
+  typescript: {
+    typeCheck: true,
+  },
   app: {
     head: {
         title: 'REBO Groep',
