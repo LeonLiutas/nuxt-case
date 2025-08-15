@@ -34,21 +34,19 @@ export default eventHandler(async (event) => {
         }))
         .sort((a, b) => a.position - b.position) // Order by position according to the Recruitee API
 
-    let filteredVacancies = vacancies;
-
     // filter vacancies by locations if provided
-    filteredVacancies = filteredVacancies.filter((vacancy) => {
-        if(filteredLocations.length === 0) return true;
+    const filteredVacancies = vacancies
+        .filter((vacancy) => {
+            if(filteredLocations.length === 0) return true;
 
-        return filteredLocations.includes(vacancy.location.toLowerCase());
-    })
+            return filteredLocations.includes(vacancy.location.toLowerCase());
+        })
+        // filter vacancies by departments if provided
+        .filter((vacancy) => {
+            if(filteredDepartments.length === 0) return true;
 
-    // filter vacancies by departments if provided
-    filteredVacancies = filteredVacancies.filter((vacancy) => {
-        if(filteredDepartments.length === 0) return true;
-
-        return filteredDepartments.includes(vacancy.department.toLowerCase());
-    })
+            return filteredDepartments.includes(vacancy.department.toLowerCase());
+        })
 
 
     // Create sets of unique filterable items 
@@ -70,7 +68,8 @@ export default eventHandler(async (event) => {
     // Setup some metadata for the response
     const meta = {
         timestamp: new Date().toISOString(),
-        total: vacancies.length
+        total: vacancies.length,
+        filteredTotal: filteredVacancies.length,
     }
 
     // Return the data
