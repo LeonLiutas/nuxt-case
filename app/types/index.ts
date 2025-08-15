@@ -1,7 +1,7 @@
 export interface Vacancy {
     title: string;
     location: string;
-    experience: string;
+    experience: typeof VacancyLevel | string;
     url: string;
     min_hours: number | string;
     max_hours: number | string;
@@ -11,3 +11,10 @@ export interface Vacancy {
     position: number;
     status?: "draft" | "internal" | "published" | "closed" | "archived"; // according to Recruitee API docs
 }
+
+export const VacancyLevel = {
+    'entry_level': 'Junior',
+    'mid_level': 'Medior',
+    'experienced': 'Senior',
+    'student_college': 'Stage'
+} as const

@@ -1,6 +1,7 @@
 import type { Vacancy } from '~/types';
+import { VacancyLevel } from '~/types';
 
-export default cachedEventHandler(async (event) => {    
+export default cachedEventHandler(async (event) => {
     // get API URL from config
     const { apiUrl } = useRuntimeConfig()
 
@@ -13,12 +14,13 @@ export default cachedEventHandler(async (event) => {
         .map((vacancy: any) => ({
             title: vacancy.title || '',
             location: vacancy.state_name || '',
-            experience: vacancy.experience_code || '',
+            experience: vacancy.experience_code ? VacancyLevel[vacancy.experience_code as keyof typeof VacancyLevel] || '' : '',
             url: vacancy.careers_url || '',
             min_hours: vacancy.min_hours || vacancy.min_hours_per_week || '',
             max_hours: vacancy.max_hours || vacancy.max_hours_per_week || '',
             salary_min: vacancy?.salary?.min || '',
-            salary_max: vacancy?.salary?.max || '',
+            // salary_max: vacancy?.salary?.max || '',
+            salary_max: '',
             department: vacancy.department || '',
             position: vacancy.position || 0, // position in order
         }));
@@ -38,6 +40,6 @@ export default cachedEventHandler(async (event) => {
         vacancies,
     }
 }, {
-    maxAge: 5,
+    maxAge: 300,
     swr: true,
 })
