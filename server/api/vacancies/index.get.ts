@@ -13,6 +13,10 @@ export default eventHandler(async (event) => {
         Array.isArray(query.locations) ? query.locations : [query.locations || '']
     ).filter(Boolean); // Filter out empty strings or undefined values
 
+    const filteredDepartments = (
+        Array.isArray(query.departments) ? query.departments : [query.departments || '']
+    ).filter(Boolean); // Filter out empty strings or undefined values
+
     // Map the response to a more usable format
     const vacancies: Vacancy[] = response
         .filter((vacancy: any) => vacancy.status === 'published') // Filter only published vacancies
@@ -30,24 +34,43 @@ export default eventHandler(async (event) => {
         }))
         .sort((a, b) => a.position - b.position) // Order by position according to the Recruitee API
 
+    let filteredVacancies = vacancies;
+
     // filter vacancies by locations if provided
-    let filteredVacancies = vacancies.filter((vacancy) => {
+    filteredVacancies = filteredVacancies.filter((vacancy) => {
         if(filteredLocations.length === 0) return true;
 
         return filteredLocations.includes(vacancy.location.toLowerCase());
     })
 
+    // filter vacancies by departments if provided
+    filteredVacancies = filteredVacancies.filter((vacancy) => {
+        if(filteredDepartments.length === 0) return true;
+
+        return filteredDepartments.includes(vacancy.department.toLowerCase());
+    })
+
+
+    // Create sets of unique filterable items 
+    // Create a list of unique locations, filter empty strings, and sort them ascending
+    const allLocations = [...new Set(vacancies.map(v => v.location) || [])]
+        .filter(Boolean)
+        .sort();
+
+    // Create a list of unique departments, filter empty strings, and sort them ascending
+    const allDepartments = [...new Set(vacancies.map(v => v.department) || [])]
+        .filter(Boolean)
+        .sort();
+
+    const filters = {
+        locations: allLocations,
+        departments: allDepartments,
+    }
+
     // Setup some metadata for the response
     const meta = {
         timestamp: new Date().toISOString(),
         total: vacancies.length
-    }
-
-    // Create sets of unique filterable items
-    const allLocations = [...new Set(vacancies.map(v => v.location) || [])]
-
-    const filters = {
-        locations: allLocations
     }
 
     // Return the data
