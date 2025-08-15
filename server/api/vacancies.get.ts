@@ -19,8 +19,7 @@ export default cachedEventHandler(async (event) => {
             min_hours: vacancy.min_hours || vacancy.min_hours_per_week || '',
             max_hours: vacancy.max_hours || vacancy.max_hours_per_week || '',
             salary_min: vacancy?.salary?.min || '',
-            // salary_max: vacancy?.salary?.max || '',
-            salary_max: '',
+            salary_max: vacancy?.salary?.max || '',
             department: vacancy.department || '',
             position: vacancy.position || 0, // position in order
         }));
