@@ -1,12 +1,17 @@
 import type { Vacancy } from '~/types';
 import { VacancyLevel } from '~/types';
 
-export default cachedEventHandler(async (event) => {
-    // get API URL from config
-    const { apiUrl } = useRuntimeConfig()
+export default eventHandler(async (event) => {
+    // Get the raw vacancies from the external API
+    const response : Array<object> = await $fetch('/api/vacancies/raw');
 
-    // Do the actual API call
-    const { offers: response } = await $fetch<{ offers: object[] }>(apiUrl);
+    // get query parameters
+    const query = getQuery(event);
+
+    // Get filtered options
+    const filteredLocations = (
+        Array.isArray(query.locations) ? query.locations : [query.locations || '']
+    ).filter(Boolean); // Filter out empty strings or undefined values
 
     // Map the response to a more usable format
     const vacancies: Vacancy[] = response
@@ -22,7 +27,15 @@ export default cachedEventHandler(async (event) => {
             salary_max: vacancy?.salary?.max || '',
             department: vacancy.department || '',
             position: vacancy.position || 0, // position in order
-        }));
+        }))
+        .sort((a, b) => a.position - b.position) // Order by position according to the Recruitee API
+
+    // filter vacancies by locations if provided
+    let filteredVacancies = vacancies.filter((vacancy) => {
+        if(filteredLocations.length === 0) return true;
+
+        return filteredLocations.includes(vacancy.location.toLowerCase());
+    })
 
     // Setup some metadata for the response
     const meta = {
@@ -30,15 +43,17 @@ export default cachedEventHandler(async (event) => {
         total: vacancies.length
     }
 
-    // Order  vacancies by position from Recruitee API
-    vacancies.sort((a, b) => a.position - b.position);
+    // Create sets of unique filterable items
+    const allLocations = [...new Set(vacancies.map(v => v.location) || [])]
+
+    const filters = {
+        locations: allLocations
+    }
 
     // Return the data
     return {
         meta,
-        vacancies,
+        filters,
+        vacancies: filteredVacancies
     }
-}, {
-    maxAge: 300,
-    swr: true,
 })
