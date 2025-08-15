@@ -19,7 +19,7 @@
         </ul>
 
         <h3 class="text-xl font-bold">Afdelingen</h3>
-        <ul>
+        <ul class="mb-4">
             <li v-for="department in departments">
                 <label :for="department.toLowerCase()">
                     <input 
@@ -34,13 +34,27 @@
             </li>
         </ul>
 
+        <h3 class="text-xl font-bold">Zoeken</h3>
+        <input 
+            type="search" 
+            placeholder="Zoek op functietitel..." 
+            class="border border-gray-300 rounded p-2 w-full bg-white"
+            v-model="searchQueryLocal"
+        />
+
     </div>
 </template>
 
 <script setup>
-const { locations,departments, selectedLocations, selectedDepartments } = defineProps({
+import debounce from 'lodash/debounce'
+
+const { locations, departments, searchQuery, selectedLocations, selectedDepartments } = defineProps({
     locations: Array,
     departments: Array,
+    searchQuery: {
+        type: String,
+        default: '',
+    },
     selectedLocations: {
         type: Array,
         default: [],
@@ -51,10 +65,11 @@ const { locations,departments, selectedLocations, selectedDepartments } = define
     },
 })
 
-const emit = defineEmits(['update:selectedLocations', 'update:selectedDepartments'])
+const emit = defineEmits(['update:selectedLocations', 'update:selectedDepartments', 'update:searchQuery'])
 
 const selectedLocationsLocal = ref([...selectedLocations])
 const selectedDepartmentsLocal = ref([...selectedDepartments])
+const searchQueryLocal = ref(searchQuery)
 
 watch(selectedLocationsLocal, (value) => {
     emit('update:selectedLocations', value)
@@ -62,5 +77,13 @@ watch(selectedLocationsLocal, (value) => {
 
 watch(selectedDepartmentsLocal, (value) => {
     emit('update:selectedDepartments', value)
+})
+
+const updateSearchQuery = debounce((val) => {
+    emit('update:searchQuery', val)
+}, 350)
+
+watch(searchQueryLocal, (val) => {
+    updateSearchQuery(val)
 })
 </script>

@@ -1,14 +1,16 @@
 <template>
     <div>
-        <div class="grid grid-cols-12">
+        <div class="grid grid-cols-12 gap-8">
             <div class="col-span-12 lg:col-span-3">
                 <VacanciesFilter 
                     :locations
                     :departments
                     :selectedLocations
                     :selectedDepartments
+                    :searchQuery
                     @update:selectedLocations="val => selectedLocations = val"
                     @update:selectedDepartments="val => selectedDepartments = val"
+                    @update:searchQuery="val => searchQuery = val"
                 />
             </div>
 
@@ -32,6 +34,7 @@ const router = useRouter()
 // Define the active filters
 const selectedLocations = ref(route.query.locations?.toLowerCase().split(',') || []);
 const selectedDepartments = ref(route.query.departments?.toLowerCase().split(',') || []);
+const searchQuery = ref(route.query.search || '');
 
 // Get the filter options from the API
 const locations = computed(() => data.value.filters.locations || [])
@@ -42,6 +45,7 @@ const { data, pending, error, refresh } = await useFetch('/api/vacancies', {
     query: {  
         locations: selectedLocations,
         departments: selectedDepartments,
+        search: searchQuery
     }
 })
 
@@ -68,6 +72,18 @@ watch(selectedDepartments, (val) => {
         query.departments = val.join(',');
     } else {
         delete query.departments;
+    }
+
+    router.push({ query });
+})
+
+watch(searchQuery, (val) => {
+    const query = {...route.query};
+
+    if(val.length) {
+        query.search = val;
+    } else {
+        delete query.search;
     }
 
     router.push({ query });

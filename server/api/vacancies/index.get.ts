@@ -17,6 +17,10 @@ export default eventHandler(async (event) => {
         Array.isArray(query.departments) ? query.departments : [query.departments || '']
     ).filter(Boolean); // Filter out empty strings or undefined values
 
+    const searchQuery = query.search ? String(query.search).toLowerCase() : ''
+
+    console.log('Search query:', searchQuery)
+
     // Map the response to a more usable format
     const vacancies: Vacancy[] = response
         .filter((vacancy: any) => vacancy.status === 'published') // Filter only published vacancies
@@ -46,6 +50,11 @@ export default eventHandler(async (event) => {
             if(filteredDepartments.length === 0) return true;
 
             return filteredDepartments.includes(vacancy.department.toLowerCase());
+        })
+        .filter((vacancy) => {
+            if(searchQuery.length === 0) return true;
+
+            return vacancy.title.toLowerCase().includes(searchQuery);
         })
 
 
