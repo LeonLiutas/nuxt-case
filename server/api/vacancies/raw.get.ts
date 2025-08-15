@@ -1,6 +1,4 @@
 export default cachedEventHandler(async (event) => {
-    console.log('Fetching external vacancies...');
-
     // get API URL from config
     const { apiUrl } = useRuntimeConfig()
 

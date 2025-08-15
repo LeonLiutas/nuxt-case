@@ -81,7 +81,7 @@ watch(selectedDepartmentsLocal, (value) => {
 
 const updateSearchQuery = debounce((val) => {
     emit('update:searchQuery', val)
-}, 350)
+}, 250)
 
 watch(searchQueryLocal, (val) => {
     updateSearchQuery(val)

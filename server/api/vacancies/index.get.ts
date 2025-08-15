@@ -19,8 +19,6 @@ export default eventHandler(async (event) => {
 
     const searchQuery = query.search ? String(query.search).toLowerCase() : ''
 
-    console.log('Search query:', searchQuery)
-
     // Map the response to a more usable format
     const vacancies: Vacancy[] = response
         .filter((vacancy: any) => vacancy.status === 'published') // Filter only published vacancies
