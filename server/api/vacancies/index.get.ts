@@ -17,7 +17,11 @@ export default eventHandler(async (event) => {
         Array.isArray(query.departments) ? query.departments : [query.departments || '']
     ).filter(Boolean); // Filter out empty strings or undefined values
 
+    // Get search query
     const searchQuery = query.search ? String(query.search).toLowerCase() : ''
+
+    // Min/max hours filter
+    const filteredMinHours = Number(query.minHours || 0);
 
     // Map the response to a more usable format
     const vacancies: Vacancy[] = response
@@ -54,6 +58,15 @@ export default eventHandler(async (event) => {
 
             return vacancy.title.toLowerCase().includes(searchQuery);
         })
+        .filter((vacancy) => {
+            // If no min hours filter is active, return all vacancies
+            if(!filteredMinHours) return true;
+
+            // If vacancy has no min/max hours, always return
+            if(!vacancy.min_hours && !vacancy.max_hours) return true; 
+
+            return vacancy.min_hours <= filteredMinHours && filteredMinHours <= vacancy.max_hours;
+        })
 
 
     // Create sets of unique filterable items 
@@ -67,9 +80,17 @@ export default eventHandler(async (event) => {
         .filter(Boolean)
         .sort();
 
+    // Get minimum and maximum hours per week
+    const minHours = Math.min(...vacancies.map(v => v.min_hours));
+    const maxHours = Math.max(...vacancies.map(v => v.max_hours));
+
     const filters = {
         locations: allLocations,
         departments: allDepartments,
+        hours: {
+            min: minHours,
+            max: maxHours,
+        }
     }
 
     // Setup some metadata for the response

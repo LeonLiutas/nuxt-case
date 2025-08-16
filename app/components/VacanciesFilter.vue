@@ -38,17 +38,42 @@
         <input 
             type="search" 
             placeholder="Zoek op functietitel..." 
-            class="border border-gray-300 rounded p-2 w-full bg-white"
+            class="border border-gray-300 rounded p-2 w-full bg-white mb-4"
             v-model="searchQueryLocal"
         />
 
+        <h3 class="text-xl font-bold">Aantal uren</h3>
+        <input 
+            type="number"
+            placeholder="Aantal uren per week..."
+            class="border border-gray-300 rounded p-2 w-full bg-white mb-4"
+            :min="hours.min"
+            :max="hours.max"
+            v-model.number="inputHoursHandler"
+            step="4"
+        />
     </div>
 </template>
 
 <script setup>
 import debounce from 'lodash/debounce'
 
-const { locations, departments, searchQuery, selectedLocations, selectedDepartments } = defineProps({
+const {
+    hours,
+    locations, 
+    departments, 
+    searchQuery, 
+    selectedLocations, 
+    selectedDepartments,
+    selectedHours
+} = defineProps({
+    hours: {
+        type: Object,
+    },
+    selectedHours: {
+        type: [String, Number],
+        default: 0,
+    },
     locations: Array,
     departments: Array,
     searchQuery: {
@@ -65,11 +90,20 @@ const { locations, departments, searchQuery, selectedLocations, selectedDepartme
     },
 })
 
-const emit = defineEmits(['update:selectedLocations', 'update:selectedDepartments', 'update:searchQuery'])
+const emit = defineEmits(['update:selectedLocations', 'update:selectedDepartments', 'update:searchQuery', 'update:selectedHours'])
 
 const selectedLocationsLocal = ref([...selectedLocations])
 const selectedDepartmentsLocal = ref([...selectedDepartments])
 const searchQueryLocal = ref(searchQuery)
+
+// create handler function for input ofhours filter
+const inputHoursHandler = computed({
+    // if 0, set to empty string to show placeholder, otherwise use the value
+    get: () => selectedHours === 0 ? '' : selectedHours,
+    set: (value) => {
+        emit('update:selectedHours', value === '' ? 0 : value)
+    }
+})
 
 watch(selectedLocationsLocal, (value) => {
     emit('update:selectedLocations', value)

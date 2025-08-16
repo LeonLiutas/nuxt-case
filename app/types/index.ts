@@ -3,8 +3,8 @@ export interface Vacancy {
     location: string;
     experience: typeof VacancyLevel | string;
     url: string;
-    min_hours: number | string;
-    max_hours: number | string;
+    min_hours: number;
+    max_hours: number;
     salary_min: number | string;
     salary_max: number | string;
     department: string;

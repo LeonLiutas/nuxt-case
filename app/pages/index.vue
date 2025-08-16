@@ -5,12 +5,15 @@
                 <VacanciesFilter 
                     :locations
                     :departments
+                    :hours
                     :selectedLocations
                     :selectedDepartments
                     :searchQuery
+                    :selectedHours
                     @update:selectedLocations="val => selectedLocations = val"
                     @update:selectedDepartments="val => selectedDepartments = val"
                     @update:searchQuery="val => searchQuery = val"
+                    @update:selectedHours="val => selectedHours = val"
                 />
             </div>
 
@@ -35,24 +38,25 @@ const router = useRouter()
 const selectedLocations = ref(route.query.locations?.toLowerCase().split(',') || []);
 const selectedDepartments = ref(route.query.departments?.toLowerCase().split(',') || []);
 const searchQuery = ref(route.query.search || '');
-
-// Get the filter options from the API
-const locations = computed(() => data.value.filters.locations || [])
-const departments = computed(() => data.value.filters.departments || []);
+const selectedHours = ref(route.query.minHours ? Number(route.query.minHours) : 0); 
 
 // Get the vacancies data from the API
 const { data, pending, error, refresh } = await useFetch('/api/vacancies', {
     query: {  
         locations: selectedLocations,
         departments: selectedDepartments,
-        search: searchQuery
+        search: searchQuery,
+        minHours: selectedHours,
     }
 })
 
+// Get the filter options from the API
+const locations = computed(() => data.value.filters.locations || [])
+const departments = computed(() => data.value.filters.departments || []);
+const hours = computed(() => data.value.filters.hours || { min: 0, max: 40 });
 const vacancies = computed(() => data.value.vacancies || []);
 
-
-// Watchers
+// Watchers for filters to update the URL query parameters
 watch(selectedLocations, (val) => {
     const query = {...route.query};
 
@@ -84,6 +88,18 @@ watch(searchQuery, (val) => {
         query.search = val;
     } else {
         delete query.search;
+    }
+
+    router.push({ query });
+})
+
+watch(selectedHours, (val) => {
+    const query = {...route.query};
+
+    if(val) {
+        query.minHours = val;
+    } else {
+        delete query.minHours;
     }
 
     router.push({ query });
