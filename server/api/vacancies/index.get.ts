@@ -8,11 +8,12 @@ export default eventHandler(async (event) => {
     // get query parameters
     const query = getQuery(event);
 
-    // Get filtered options
+    // Get filtered options for locations
     const filteredLocations = (
         Array.isArray(query.locations) ? query.locations : [query.locations || '']
     ).filter(Boolean); // Filter out empty strings or undefined values
 
+    // Filtered options for departments
     const filteredDepartments = (
         Array.isArray(query.departments) ? query.departments : [query.departments || '']
     ).filter(Boolean); // Filter out empty strings or undefined values
@@ -22,6 +23,11 @@ export default eventHandler(async (event) => {
 
     // Min/max hours filter
     const filteredMinHours = Number(query.minHours || 0);
+
+    const filteredSalary = {
+        min: Number(query.minSalary || 0),
+        max: Number(query.maxSalary || Infinity),
+    }
 
     // Map the response to a more usable format
     const vacancies: Vacancy[] = response
@@ -40,8 +46,8 @@ export default eventHandler(async (event) => {
         }))
         .sort((a, b) => a.position - b.position) // Order by position according to the Recruitee API
 
-    // filter vacancies by locations if provided
     const filteredVacancies = vacancies
+        // filter vacancies by locations if provided
         .filter((vacancy) => {
             if(filteredLocations.length === 0) return true;
 
@@ -53,11 +59,13 @@ export default eventHandler(async (event) => {
 
             return filteredDepartments.includes(vacancy.department.toLowerCase());
         })
+        // filter vacancies by search query
         .filter((vacancy) => {
             if(searchQuery.length === 0) return true;
 
             return vacancy.title.toLowerCase().includes(searchQuery);
         })
+        // filter vacancies by hours
         .filter((vacancy) => {
             // If no min hours filter is active, return all vacancies
             if(!filteredMinHours) return true;
@@ -67,6 +75,19 @@ export default eventHandler(async (event) => {
 
             return vacancy.min_hours <= filteredMinHours && filteredMinHours <= vacancy.max_hours;
         })
+        // filter vacancies by salary
+        .filter((vacancy) => {
+            // If no salary filter is active, return all vacancies
+            if(!filteredSalary.min && (!filteredSalary.max || filteredSalary.max === Infinity)) return true;
+
+            // If vacancy has no salary, do not show
+            if(!vacancy.salary_min && !vacancy.salary_max) return false;
+
+            const minSalary = Number(vacancy.salary_min || 0);
+            const maxSalary = Number(vacancy.salary_max || Infinity);
+
+            return minSalary <= filteredSalary.max && maxSalary >= filteredSalary.min;
+        });
 
 
     // Create sets of unique filterable items 
@@ -84,12 +105,21 @@ export default eventHandler(async (event) => {
     const minHours = Math.min(...vacancies.map(v => v.min_hours));
     const maxHours = Math.max(...vacancies.map(v => v.max_hours));
 
+    // Get minimum and maximum salary
+    const minSalary = Math.min(...vacancies.map(v => Number(v.salary_min)))
+    const maxSalary = Math.max(...vacancies.map(v => Number(v.salary_max)));
+
+    // Create a filters object to return with the response
     const filters = {
         locations: allLocations,
         departments: allDepartments,
         hours: {
             min: minHours,
             max: maxHours,
+        },
+        salary: {
+            min: minSalary,
+            max: maxSalary,
         }
     }
 

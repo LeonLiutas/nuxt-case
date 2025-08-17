@@ -45,13 +45,38 @@
         <h3 class="text-xl font-bold">Aantal uren</h3>
         <input 
             type="number"
-            placeholder="Aantal uren per week..."
+            :placeholder="`Aantal uren per week (${hours.min} - ${hours.max})`"
             class="border border-gray-300 rounded p-2 w-full bg-white mb-4"
             :min="hours.min"
             :max="hours.max"
             v-model.number="inputHoursHandler"
             step="4"
         />
+
+        <h3 class="text-xl font-bold">Salaris</h3>
+
+        <div class="flex gap-4 mb-4">
+            <input 
+                type="number"
+                placeholder="Min. salaris"
+                class="border border-gray-300 rounded p-2 w-full bg-white"
+                :min="salary.min"
+                :max="salary.max"
+                step="500"
+                v-model.number="selectedSalaryLocal.min"
+
+            />
+
+            <input 
+                type="number"
+                placeholder="Max. salaris"
+                class="border border-gray-300 rounded p-2 w-full bg-white"
+                :min="salary.min"
+                :max="salary.max"
+                step="500"
+                v-model.number="selectedSalaryLocal.max"
+            />
+        </div>
     </div>
 </template>
 
@@ -59,23 +84,20 @@
 import debounce from 'lodash/debounce'
 
 const {
-    hours,
     locations, 
     departments, 
+    hours,
+    salary,
     searchQuery, 
     selectedLocations, 
     selectedDepartments,
-    selectedHours
+    selectedHours,
+    selectedSalary
 } = defineProps({
-    hours: {
-        type: Object,
-    },
-    selectedHours: {
-        type: [String, Number],
-        default: 0,
-    },
+    hours: Object,
     locations: Array,
     departments: Array,
+    salary: Object,
     searchQuery: {
         type: String,
         default: '',
@@ -88,29 +110,48 @@ const {
         type: Array,
         default: [],
     },
+    selectedHours: {
+        type: [String, Number],
+        default: 0,
+    },
+    selectedSalary: Object,
 })
 
-const emit = defineEmits(['update:selectedLocations', 'update:selectedDepartments', 'update:searchQuery', 'update:selectedHours'])
+const emit = defineEmits(['update:selectedLocations', 'update:selectedDepartments', 'update:searchQuery', 'update:selectedHours', 'update:selectedSalary'])
 
 const selectedLocationsLocal = ref([...selectedLocations])
 const selectedDepartmentsLocal = ref([...selectedDepartments])
 const searchQueryLocal = ref(searchQuery)
+const selectedSalaryLocal = reactive({
+    min: Number(selectedSalary.min) || null,
+    max: Number(selectedSalary.max) || null
+})
+
+const updateSelectedSalary = debounce((val) => {
+    console.log('Updating selected salary with debounce:', val)
+    emit('update:selectedSalary', val)
+}, 350)
+
+watch(() => selectedSalaryLocal, (val) => {
+    updateSelectedSalary(val);    
+}, { deep: true })
+
+const updateSelectedHours = debounce((val) => {
+    emit('update:selectedHours', val === '' ? 0 : val)
+}, 350)
 
 // create handler function for input ofhours filter
 const inputHoursHandler = computed({
-    // if 0, set to empty string to show placeholder, otherwise use the value
-    get: () => selectedHours === 0 ? '' : selectedHours,
-    set: (value) => {
-        emit('update:selectedHours', value === '' ? 0 : value)
-    }
+    get: () => selectedHours,
+    set: (val) => updateSelectedHours(val)
 })
 
-watch(selectedLocationsLocal, (value) => {
-    emit('update:selectedLocations', value)
+watch(selectedLocationsLocal, (val) => {
+    emit('update:selectedLocations', val)
 })
 
-watch(selectedDepartmentsLocal, (value) => {
-    emit('update:selectedDepartments', value)
+watch(selectedDepartmentsLocal, (val) => {
+    emit('update:selectedDepartments', val)
 })
 
 const updateSearchQuery = debounce((val) => {

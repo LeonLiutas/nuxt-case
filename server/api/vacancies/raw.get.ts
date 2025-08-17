@@ -7,6 +7,6 @@ export default cachedEventHandler(async (event) => {
 
     return offers;
 }, {
-    maxAge: 300,
+    maxAge: 3600,
     swr: true,
 })
