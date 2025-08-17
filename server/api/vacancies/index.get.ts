@@ -86,7 +86,7 @@ export default eventHandler(async (event) => {
             const minSalary = Number(vacancy.salary_min || 0);
             const maxSalary = Number(vacancy.salary_max || Infinity);
 
-            return minSalary <= filteredSalary.max && maxSalary >= filteredSalary.min;
+            return minSalary <= filteredSalary.max && minSalary > filteredSalary.min && maxSalary >= filteredSalary.min;
         });
 
 
