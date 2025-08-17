@@ -3,19 +3,17 @@
         <div class="grid grid-cols-12 gap-8">
             <div class="col-span-12 lg:col-span-3">
                 <VacanciesFilter 
-                    :locations
                     :departments
                     :hours
+                    :locations
                     :salary
-                    :selectedLocations
-                    :selectedDepartments
-                    :searchQuery
-                    :selectedHours
+
+                    v-model:selectedDepartments="selectedDepartments"
+                    v-model:selectedHours="selectedHours"
+                    v-model:selectedLocations="selectedLocations"
+                    v-model:searchQuery="searchQuery"
+
                     :selectedSalary
-                    @update:selectedLocations="val => selectedLocations = val"
-                    @update:selectedDepartments="val => selectedDepartments = val"
-                    @update:searchQuery="val => searchQuery = val"
-                    @update:selectedHours="val => selectedHours = val"
                     @update:selectedSalary="val => Object.assign(selectedSalary, val)"
                 />
             </div>
@@ -120,7 +118,7 @@ watch(selectedHours, (val) => {
     router.push({ query });
 })
 
-watch(() => selectedSalary, (val) => {    
+watch(() => selectedSalary, (val) => {
     const query = {...route.query};
 
     if(val.min) {
@@ -136,5 +134,7 @@ watch(() => selectedSalary, (val) => {
     }
 
     router.push({ query });
-}, { deep: true })
+}, {
+    deep: true
+})
 </script>

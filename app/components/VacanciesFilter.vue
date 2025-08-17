@@ -49,12 +49,11 @@
             class="border border-gray-300 rounded p-2 w-full bg-white mb-4"
             :min="hours.min"
             :max="hours.max"
-            v-model.number="inputHoursHandler"
+            v-model.number="selectedHoursLocal"
             step="4"
         />
 
         <h3 class="text-xl font-bold">Salaris</h3>
-
         <div class="flex gap-4 mb-4">
             <input 
                 type="number"
@@ -84,76 +83,79 @@
 import debounce from 'lodash/debounce'
 
 const {
-    locations, 
     departments, 
     hours,
+    locations, 
     salary,
-    searchQuery, 
-    selectedLocations, 
     selectedDepartments,
     selectedHours,
-    selectedSalary
+    selectedLocations, 
+    selectedSalary,
+    searchQuery,
 } = defineProps({
+    departments: Array,
     hours: Object,
     locations: Array,
-    departments: Array,
     salary: Object,
-    searchQuery: {
-        type: String,
-        default: '',
-    },
-    selectedLocations: {
-        type: Array,
-        default: [],
-    },
-    selectedDepartments: {
-        type: Array,
-        default: [],
-    },
-    selectedHours: {
-        type: [String, Number],
-        default: 0,
-    },
+    selectedDepartments: Array,
+    selectedHours: [String, Number],
+    selectedLocations: Array,
     selectedSalary: Object,
+    searchQuery: String,
 })
 
-const emit = defineEmits(['update:selectedLocations', 'update:selectedDepartments', 'update:searchQuery', 'update:selectedHours', 'update:selectedSalary'])
+const emit = defineEmits([
+    'update:selectedDepartments', 
+    'update:selectedHours', 
+    'update:selectedLocations', 
+    'update:selectedSalary',
+    'update:searchQuery', 
+])
 
-const selectedLocationsLocal = ref([...selectedLocations])
+// Local state for selected filters
 const selectedDepartmentsLocal = ref([...selectedDepartments])
-const searchQueryLocal = ref(searchQuery)
+const selectedHoursLocal = ref(selectedHours)
+const selectedLocationsLocal = ref([...selectedLocations])
 const selectedSalaryLocal = reactive({
     min: Number(selectedSalary.min) || null,
     max: Number(selectedSalary.max) || null
 })
+const searchQueryLocal = ref(searchQuery)
 
-const updateSelectedSalary = debounce((val) => {
-    console.log('Updating selected salary with debounce:', val)
-    emit('update:selectedSalary', val)
-}, 350)
-
-watch(() => selectedSalaryLocal, (val) => {
-    updateSelectedSalary(val);    
-}, { deep: true })
-
-const updateSelectedHours = debounce((val) => {
-    emit('update:selectedHours', val === '' ? 0 : val)
-}, 350)
-
-// create handler function for input ofhours filter
-const inputHoursHandler = computed({
-    get: () => selectedHours,
-    set: (val) => updateSelectedHours(val)
-})
-
-watch(selectedLocationsLocal, (val) => {
-    emit('update:selectedLocations', val)
-})
-
+// Watch for changes in (local) state and emit updates
+// watch and update selectedDepartments
 watch(selectedDepartmentsLocal, (val) => {
     emit('update:selectedDepartments', val)
 })
 
+// create handler function for hours filter to use debounce
+const updateSelectedHours = debounce((val) => {
+    emit('update:selectedHours', val)
+}, 350)
+
+// watch and update selectedHours
+watch(selectedHoursLocal, (val) => {
+    updateSelectedHours(val)
+})
+
+// watch and update selectedLocations
+watch(selectedLocationsLocal, (val) => {
+    emit('update:selectedLocations', val)
+})
+
+// create handler function for salary filter to use debounce
+const updateSelectedSalary = debounce((val) => {
+    emit('update:selectedSalary', val)
+}, 350)
+
+// watch and update selectedSalary (reactive)
+watch(() => selectedSalaryLocal, (val) => {
+    updateSelectedSalary(val);    
+}, { 
+    deep: true 
+})
+
+// create handler function for search query to use debounce
 const updateSearchQuery = debounce((val) => {
     emit('update:searchQuery', val)
 }, 250)
