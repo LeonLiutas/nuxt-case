@@ -23,7 +23,15 @@
                 <div v-else-if="error">Error loading vacancies: {{ error.message }}</div>
                 <div v-else-if="!vacancies.length">Geen vacatures gevonden</div>
                 <div v-else>
-                    <VacanciesList :vacancies="vacancies" />
+                    <VacanciesList 
+                        :vacancies
+                        :meta="data.meta"
+                    />
+                    <Pagination
+                        v-if="pagination && pagination.maxPage > 1"
+                        :pagination
+                        v-model:currentPage="currentPage"
+                    />
                 </div>
             </div>
         </div>
@@ -44,9 +52,7 @@ const selectedSalary = reactive({
     min: route.query.minSalary ? Number(route.query.minSalary) : null,
     max: route.query.maxSalary ? Number(route.query.maxSalary) : null
 })
-
-// const minSalary = computed(() => selectedSalary.min)
-// const maxSalary = computed(() => selectedSalary.max)
+const currentPage = ref(Number(route.query.page) || 1)
 
 const fetchQuery = computed(() => ({
         locations: selectedLocations.value,
@@ -54,7 +60,8 @@ const fetchQuery = computed(() => ({
         search: searchQuery.value,
         minHours: selectedHours.value,
         minSalary: selectedSalary.min,
-        maxSalary: selectedSalary.max
+        maxSalary: selectedSalary.max,
+        page: currentPage.value,
 }))
 
 // Get the vacancies data from the API
@@ -68,6 +75,7 @@ const departments = computed(() => data.value.filters.departments || []);
 const hours = computed(() => data.value.filters.hours || { min: 0, max: 40 });
 const vacancies = computed(() => data.value.vacancies || []);
 const salary = computed(() => data.value.filters.salary || { min: 0, max: 10000 });
+const pagination = computed(() => data.value.meta.pagination || { currentPage: 1, maxPage: 1, perPage: 1 })
 
 // Watchers for filters to update the URL query parameters
 watch(selectedLocations, (val) => {
@@ -78,6 +86,8 @@ watch(selectedLocations, (val) => {
     } else {
         delete query.locations;
     }
+
+    currentPage.value = 1; 
 
     router.push({ query });
 })
@@ -91,6 +101,8 @@ watch(selectedDepartments, (val) => {
         delete query.departments;
     }
 
+    currentPage.value = 1;
+
     router.push({ query });
 })
 
@@ -103,6 +115,8 @@ watch(searchQuery, (val) => {
         delete query.search;
     }
 
+    currentPage.value = 1; 
+
     router.push({ query });
 })
 
@@ -114,6 +128,8 @@ watch(selectedHours, (val) => {
     } else {
         delete query.minHours;
     }
+
+    currentPage.value = 1; 
 
     router.push({ query });
 })
@@ -133,8 +149,22 @@ watch(() => selectedSalary, (val) => {
         delete query.maxSalary;
     }
 
+    currentPage.value = 1; 
+
     router.push({ query });
 }, {
     deep: true
+})
+
+watch(currentPage, (val) => {
+    const query = {...route.query};
+
+    if(val && val > 1) {
+        query.page = val;
+    } else {
+        delete query.page;
+    }
+
+    router.push({ query });
 })
 </script>

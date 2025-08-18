@@ -3,6 +3,7 @@
 
     <div>
         <h3 class="text-xl font-bold">Locaties</h3>
+
         <ul class="mb-4">
             <li v-for="location in locations">
                 <label :for="location.toLowerCase()">

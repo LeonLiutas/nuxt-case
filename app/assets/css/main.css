@@ -5,3 +5,19 @@
     --color-secondary: #0069b4;
     --color-accent: #60beb1;
 }
+
+@layer components {
+    ul.pagination {
+        @apply flex flex-wrap items-center space-x-2 mt-4;
+
+        & > li {
+            button {
+                @apply px-3 py-2 border border-gray-300 rounded-md text-xs font-medium bg-white cursor-pointer hover:bg-gray-200;
+
+                &.active {
+                    @apply bg-gray-600 text-white border-gray-600 font-bold;
+                }
+            }
+        }
+    }
+}
