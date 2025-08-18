@@ -89,6 +89,19 @@ export default eventHandler(async (event) => {
             return minSalary <= filteredSalary.max && minSalary > filteredSalary.min && maxSalary >= filteredSalary.min;
         });
 
+    // Pagination
+    const totalFilteredVacancies = filteredVacancies.length;
+    const perPage = 6; // Could be made dynamic
+    const maxPage = Math.ceil(totalFilteredVacancies / perPage);
+
+    const pageQuery = Number(query.page) > 0 ? Number(query.page) : 1;
+    const page = Math.min(pageQuery, maxPage)
+
+    const paginatedVacancies = filteredVacancies.slice(
+        // Calculate the start and end index for pagination
+        (page - 1) * perPage,
+        (page * perPage)
+    )
 
     // Create sets of unique filterable items 
     // Create a list of unique locations, filter empty strings, and sort them ascending
@@ -128,12 +141,17 @@ export default eventHandler(async (event) => {
         timestamp: new Date().toISOString(),
         total: vacancies.length,
         filteredTotal: filteredVacancies.length,
+        pagination: {
+            currentPage: page,
+            perPage,
+            maxPage
+        }
     }
 
     // Return the data
     return {
         meta,
         filters,
-        vacancies: filteredVacancies
+        vacancies: paginatedVacancies,
     }
 })
