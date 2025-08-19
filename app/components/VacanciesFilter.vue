@@ -64,7 +64,6 @@
                 :max="salary.max"
                 step="500"
                 v-model.number="selectedSalaryLocal.min"
-
             />
 
             <input 
@@ -145,13 +144,21 @@ watch(selectedLocationsLocal, (val) => {
 })
 
 // create handler function for salary filter to use debounce
-const updateSelectedSalary = debounce((val) => {
+const updateSelectedSalary = debounce((val) => {    
     emit('update:selectedSalary', val)
 }, 350)
 
 // watch and update selectedSalary (reactive)
 watch(() => selectedSalaryLocal, (val) => {
-    updateSelectedSalary(val);    
+    // Ensure max is not less than min
+    let { min, max } = val
+
+    if(max && min > max) {
+        selectedSalaryLocal.max = min;
+        max = min;
+    }
+    
+    updateSelectedSalary({ min, max });
 }, { 
     deep: true 
 })

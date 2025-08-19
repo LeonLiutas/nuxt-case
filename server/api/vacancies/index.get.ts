@@ -77,21 +77,38 @@ export default eventHandler(async (event) => {
         })
         // filter vacancies by salary
         .filter((vacancy) => {
+            const minSalary = Number(vacancy.salary_min || 0);
+            const maxSalary = Number(vacancy.salary_max || Infinity);
+
             // If no salary filter is active, return all vacancies
             if(!filteredSalary.min && (!filteredSalary.max || filteredSalary.max === Infinity)) return true;
 
             // If vacancy has no salary, do not show
             if(!vacancy.salary_min && !vacancy.salary_max) return false;
 
-            const minSalary = Number(vacancy.salary_min || 0);
-            const maxSalary = Number(vacancy.salary_max || Infinity);
+            // If only min salary is set, check if the vacancy's min salary is within the range
+            if(filteredSalary.min && (!filteredSalary.max || filteredSalary.max === Infinity)) {
+                return filteredSalary.min >= minSalary && maxSalary >= filteredSalary.min;
+            }
 
-            return minSalary <= filteredSalary.max && minSalary > filteredSalary.min && maxSalary >= filteredSalary.min;
+            // If only max salary is set, check if the vacancy's max salary is within the range
+            if(filteredSalary.max && filteredSalary.min === 0) {
+                return filteredSalary.max >= minSalary;
+            }
+
+            // If both min and max salary are set, check if the vacancy's salary range overlaps with the filter range
+            if(minSalary > filteredSalary.min && filteredSalary.max > minSalary) return true;
+
+            // If the vacancy's salary range overlaps with the filter range, or if min and max are the same
+            return (
+                minSalary <= filteredSalary.max && 
+                maxSalary >= filteredSalary.min
+            );
         });
 
     // Pagination
     const totalFilteredVacancies = filteredVacancies.length;
-    const perPage = 6; // Could be made dynamic
+    const perPage = 6; // Could be made dynamic in future
     const maxPage = Math.ceil(totalFilteredVacancies / perPage);
 
     const pageQuery = Number(query.page) > 0 ? Number(query.page) : 1;
@@ -119,8 +136,12 @@ export default eventHandler(async (event) => {
     const maxHours = Math.max(...vacancies.map(v => v.max_hours));
 
     // Get minimum and maximum salary
-    const minSalary = Math.min(...vacancies.map(v => Number(v.salary_min)))
+    const minSalary = Math.min(...vacancies.map(v => Number(v.salary_min)));
     const maxSalary = Math.max(...vacancies.map(v => Number(v.salary_max)));
+
+    // Round the salaries to the nearest 500
+    const minSalaryRounded = Math.floor(minSalary / 500) * 500;
+    const maxSalaryRounded = Math.ceil(maxSalary / 500) * 500;
 
     // Create a filters object to return with the response
     const filters = {
@@ -131,8 +152,8 @@ export default eventHandler(async (event) => {
             max: maxHours,
         },
         salary: {
-            min: minSalary,
-            max: maxSalary,
+            min: minSalaryRounded,
+            max: maxSalaryRounded,
         }
     }
 
