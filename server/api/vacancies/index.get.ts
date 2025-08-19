@@ -46,65 +46,89 @@ export default eventHandler(async (event) => {
         }))
         .sort((a, b) => a.position - b.position) // Order by position according to the Recruitee API
 
+    // Create a filtered list of vacancies based on the query parameters
     const filteredVacancies = vacancies
-        // filter vacancies by locations if provided
         .filter((vacancy) => {
-            if(filteredLocations.length === 0) return true;
+            // Locations filter
+            if(filteredLocations.length && !filteredLocations.includes(vacancy.location.toLowerCase())) return false;
 
-            return filteredLocations.includes(vacancy.location.toLowerCase());
-        })
-        // filter vacancies by departments if provided
-        .filter((vacancy) => {
-            if(filteredDepartments.length === 0) return true;
+            // Departments filter
+            if(filteredDepartments.length && !filteredDepartments.includes(vacancy.department.toLowerCase())) return false;
 
-            return filteredDepartments.includes(vacancy.department.toLowerCase());
-        })
-        // filter vacancies by search query
-        .filter((vacancy) => {
-            if(searchQuery.length === 0) return true;
+            // Search filter
+            if(searchQuery.length && !vacancy.title.toLowerCase().includes(searchQuery)) return false;
 
-            return vacancy.title.toLowerCase().includes(searchQuery);
-        })
-        // filter vacancies by hours
-        .filter((vacancy) => {
-            // If no min hours filter is active, return all vacancies
-            if(!filteredMinHours) return true;
+            // Hours filter
+            if(filteredMinHours) {
+                // TODO : let it work if there is only 1 of min or max set 
+                // Check if the vacancy has min/max hours
+                if (vacancy.min_hours && vacancy.max_hours) {
+                    if(!(filteredMinHours >= vacancy.min_hours && filteredMinHours <= vacancy.max_hours)) return false;
+                } else {
+                    // No hours set for the vacancy, so we do not return it
+                    return false;
+                }
+            }
 
-            // If vacancy has no min/max hours, always return
-            if(!vacancy.min_hours && !vacancy.max_hours) return true; 
-
-            return vacancy.min_hours <= filteredMinHours && filteredMinHours <= vacancy.max_hours;
-        })
-        // filter vacancies by salary
-        .filter((vacancy) => {
+            // Salary filter
             const minSalary = Number(vacancy.salary_min || 0);
             const maxSalary = Number(vacancy.salary_max || Infinity);
 
-            // If no salary filter is active, return all vacancies
-            if(!filteredSalary.min && (!filteredSalary.max || filteredSalary.max === Infinity)) return true;
+            // Check if at least 1 salary filter is set
+            if(filteredSalary.min || (filteredSalary.max && filteredSalary.max !== Infinity)) {
+                // Vacancy has no salary
+                if(!vacancy.salary_min && !vacancy.salary_max) return false;
 
-            // If vacancy has no salary, do not show
-            if(!vacancy.salary_min && !vacancy.salary_max) return false;
+                // If only min salary is set
+                if(filteredSalary.min && (!filteredSalary.max || filteredSalary.max === Infinity)) {
+                    if(!(filteredSalary.min >= minSalary && maxSalary >= filteredSalary.min)) return false;
+                }
 
-            // If only min salary is set, check if the vacancy's min salary is within the range
-            if(filteredSalary.min && (!filteredSalary.max || filteredSalary.max === Infinity)) {
-                return filteredSalary.min >= minSalary && maxSalary >= filteredSalary.min;
+                // If only max salary is set
+                if(filteredSalary.max && (!filteredSalary.min || filteredSalary.min === 0)) {
+                    if(!(filteredSalary.max >= minSalary)) return false;
+                }
+
+                // If both min and max salary are set
+                if(filteredSalary.min && (filteredSalary.max && filteredSalary.max !== Infinity)) {
+                    if(!(minSalary <= filteredSalary.max && maxSalary >= filteredSalary.min)) return false;
+                }
             }
 
-            // If only max salary is set, check if the vacancy's max salary is within the range
-            if(filteredSalary.max && filteredSalary.min === 0) {
-                return filteredSalary.max >= minSalary;
-            }
+            // If no other filters are applied, return true
+            return true;
+        })
+        // filter vacancies by salary
+        // .filter((vacancy) => {
+        //     const minSalary = Number(vacancy.salary_min || 0);
+        //     const maxSalary = Number(vacancy.salary_max || Infinity);
 
-            // If both min and max salary are set, check if the vacancy's salary range overlaps with the filter range
-            if(minSalary > filteredSalary.min && filteredSalary.max > minSalary) return true;
+        //     // If no salary filter is active, return all vacancies
+        //     if(!filteredSalary.min && (!filteredSalary.max || filteredSalary.max === Infinity)) return true;
 
-            // If the vacancy's salary range overlaps with the filter range, or if min and max are the same
-            return (
-                minSalary <= filteredSalary.max && 
-                maxSalary >= filteredSalary.min
-            );
-        });
+        //     // If vacancy has no salary, do not show
+        //     if(!vacancy.salary_min && !vacancy.salary_max) return false;
+
+        //     // If only min salary is set, check if the vacancy's min salary is within the range
+        //     if(filteredSalary.min && (!filteredSalary.max || filteredSalary.max === Infinity)) {
+        //         return filteredSalary.min >= minSalary && maxSalary >= filteredSalary.min;
+        //     }
+
+        //     // If only max salary is set, check if the vacancy's max salary is within the range
+        //     if(filteredSalary.max && filteredSalary.min === 0) {
+        //         return filteredSalary.max >= minSalary;
+        //     }
+
+        //     // If both min and max salary are set, check if the vacancy's salary range overlaps with the filter range
+        //     if(minSalary > filteredSalary.min && filteredSalary.max > minSalary) return true;
+
+        //     // If the vacancy's salary range overlaps with the filter range, or if min and max are the same
+        //     return (
+        //         minSalary <= filteredSalary.max && 
+        //         maxSalary >= filteredSalary.min
+        //     );
+        // });
+
 
     // Pagination
     const totalFilteredVacancies = filteredVacancies.length;
