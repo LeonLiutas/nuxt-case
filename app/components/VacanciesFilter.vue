@@ -146,8 +146,12 @@ const resetSelectedFilters = () => {
     nextTick(() => {
         isResettingFilters.value = false;
 
-        // Manually emit all filters to update the parent component
-        emitAllFilters();
+        // Manually emit the reset events to avoid the debounced emits
+        emit('update:selectedDepartments', localFilters.departments);
+        emit('update:selectedHours', localFilters.hours);
+        emit('update:selectedLocations', localFilters.locations);
+        emit('update:selectedSalary', localFilters.salary);
+        emit('update:searchQuery', localFilters.searchQuery);
     });
 }
 
@@ -166,34 +170,48 @@ const updateSearchQuery = debounce((val) => {
     emit('update:searchQuery', val);
 }, 350);
 
-// Store all emits in a single function, so we can call it when needed
-const emitAllFilters = () => {
-    // Update departments
-    emit('update:selectedDepartments', localFilters.departments);
-
-    // Update hours
-    updateSelectedHours(localFilters.hours);
-
-    // Update locations
-    emit('update:selectedLocations', localFilters.locations);
-
-    // Update salary
-    updateSelectedSalary(localFilters.salary);
-
-    // Update search query
-    updateSearchQuery(localFilters.searchQuery);
-}
-
-// Watch for changes in local filters and emit them to the parent component
+// Emit departments and locations filter immediately when they change
 watch(
-    () => localFilters,
+    () => [localFilters.departments, localFilters.locations],
     () => {
-        // If we are resetting filters, skip the update
-        if (isResettingFilters.value) return;
+        if(isResettingFilters.value) return;
 
-        emitAllFilters();
-    }, { 
-        deep: true,
-    },
+        // Update departments
+        emit('update:selectedDepartments', localFilters.departments);
+
+        // Update locations
+        emit('update:selectedLocations', localFilters.locations);
+    }
+)
+
+// Emit hours
+watch(
+    () => localFilters.hours, 
+    () => {
+        if(isResettingFilters.value) return;
+
+        updateSelectedHours(localFilters.hours);
+    }
+)
+
+// Emit salary
+watch(
+    () => localFilters.salary, 
+    () => {
+        if(isResettingFilters.value) return;
+
+        updateSelectedSalary(localFilters.salary);
+    }, 
+    { deep: true }
+)
+
+// Emit search query
+watch(
+    () => localFilters.searchQuery, 
+    () => {
+        if(isResettingFilters.value) return;
+
+        updateSearchQuery(localFilters.searchQuery);
+    }
 )
 </script>

@@ -98,37 +98,6 @@ export default eventHandler(async (event) => {
             // If no other filters are applied, return true
             return true;
         })
-        // filter vacancies by salary
-        // .filter((vacancy) => {
-        //     const minSalary = Number(vacancy.salary_min || 0);
-        //     const maxSalary = Number(vacancy.salary_max || Infinity);
-
-        //     // If no salary filter is active, return all vacancies
-        //     if(!filteredSalary.min && (!filteredSalary.max || filteredSalary.max === Infinity)) return true;
-
-        //     // If vacancy has no salary, do not show
-        //     if(!vacancy.salary_min && !vacancy.salary_max) return false;
-
-        //     // If only min salary is set, check if the vacancy's min salary is within the range
-        //     if(filteredSalary.min && (!filteredSalary.max || filteredSalary.max === Infinity)) {
-        //         return filteredSalary.min >= minSalary && maxSalary >= filteredSalary.min;
-        //     }
-
-        //     // If only max salary is set, check if the vacancy's max salary is within the range
-        //     if(filteredSalary.max && filteredSalary.min === 0) {
-        //         return filteredSalary.max >= minSalary;
-        //     }
-
-        //     // If both min and max salary are set, check if the vacancy's salary range overlaps with the filter range
-        //     if(minSalary > filteredSalary.min && filteredSalary.max > minSalary) return true;
-
-        //     // If the vacancy's salary range overlaps with the filter range, or if min and max are the same
-        //     return (
-        //         minSalary <= filteredSalary.max && 
-        //         maxSalary >= filteredSalary.min
-        //     );
-        // });
-
 
     // Pagination
     const totalFilteredVacancies = filteredVacancies.length;

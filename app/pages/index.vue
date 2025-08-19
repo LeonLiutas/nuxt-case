@@ -39,10 +39,9 @@
 </template>
 
 <script setup>
-const route = useRoute()
-const router = useRouter()
+const route = useRoute();
+const router = useRouter();
 
-// Filtering
 // Define the active filters
 const selectedLocations = ref(route.query.locations?.toLowerCase().split(',') || []);
 const selectedDepartments = ref(route.query.departments?.toLowerCase().split(',') || []);
@@ -54,117 +53,104 @@ const selectedSalary = reactive({
 })
 const currentPage = ref(Number(route.query.page) || 1)
 
+// Setup the filter options for the useFetch requests
 const fetchQuery = computed(() => ({
-        locations: selectedLocations.value,
-        departments: selectedDepartments.value,
-        search: searchQuery.value,
-        minHours: selectedHours.value,
-        minSalary: selectedSalary.min,
-        maxSalary: selectedSalary.max,
-        page: currentPage.value,
+    locations: selectedLocations.value,
+    departments: selectedDepartments.value,
+    search: searchQuery.value,
+    minHours: selectedHours.value,
+    minSalary: selectedSalary.min,
+    maxSalary: selectedSalary.max,
+    page: currentPage.value,
 }))
 
 // Get the vacancies data from the API
-const { data, pending, error, refresh } = await useFetch('/api/vacancies', {
-    query: fetchQuery
+const { data, pending, error } = await useFetch('/api/vacancies', {
+    query: fetchQuery,
 })
 
-// Get the filter options from the API
-const locations = computed(() => data.value.filters.locations || [])
+// Get the filterable options from the API
+const locations = computed(() => data.value.filters.locations || []);
 const departments = computed(() => data.value.filters.departments || []);
 const hours = computed(() => data.value.filters.hours || { min: 0, max: 40 });
 const vacancies = computed(() => data.value.vacancies || []);
 const salary = computed(() => data.value.filters.salary || { min: 0, max: 10000 });
-const pagination = computed(() => data.value.meta.pagination || { currentPage: 1, maxPage: 1, perPage: 1 })
+const pagination = computed(() => data.value.meta.pagination || { currentPage: 1, maxPage: 1, perPage: 1 });
 
-// Watchers for filters to update the URL query parameters
-watch(selectedLocations, (val) => {
+// Watch the fetchQuery for changes, change the route query
+watch(fetchQuery, (newValues, oldValues) => {
     const query = {...route.query};
 
-    if(val.length) {
-        query.locations = val.join(',');
+    const { 
+        locations,
+        departments,
+        search: searchQuery, 
+        minHours: selectedHours, 
+        minSalary, 
+        maxSalary, 
+        page,
+    } = newValues;
+
+    const { page: oldPage } = oldValues;
+
+    // Locations
+    if(locations && locations.length) {
+        query.locations = locations.join(',');
     } else {
         delete query.locations;
     }
 
-    currentPage.value = 1; 
-
-    router.push({ query });
-})
-
-watch(selectedDepartments, (val) => {
-    const query = {...route.query};
-
-    if(val.length) {
-        query.departments = val.join(',');
+    // Departments
+    if(departments && departments.length) {
+        query.departments = departments.join(',');
     } else {
         delete query.departments;
     }
 
-    currentPage.value = 1;
-
-    router.push({ query });
-})
-
-watch(searchQuery, (val) => {
-    const query = {...route.query};
-
-    if(val.length) {
-        query.search = val;
+    // Search query
+    if(searchQuery && searchQuery.length) {
+        query.search = searchQuery;
     } else {
         delete query.search;
     }
 
-    currentPage.value = 1; 
-
-    router.push({ query });
-})
-
-watch(selectedHours, (val) => {
-    const query = {...route.query};
-
-    if(val) {
-        query.minHours = val;
+    // Hours
+    if(selectedHours && Number(selectedHours) > 0) {
+        query.minHours = selectedHours;
     } else {
         delete query.minHours;
     }
 
-    currentPage.value = 1; 
-
-    router.push({ query });
-})
-
-watch(() => selectedSalary, (val) => {
-    const query = {...route.query};
-
-    if(val.min) {
-        query.minSalary = val.min;
+    // Min salary
+    if(minSalary && Number(minSalary) > 0) {
+        query.minSalary = minSalary;
     } else {
         delete query.minSalary;
     }
 
-    if(val.max) {
-        query.maxSalary = val.max;
+    // Max Salary
+    if(maxSalary && Number(maxSalary) > 0) {
+        query.maxSalary = maxSalary;
     } else {
         delete query.maxSalary;
     }
 
-    currentPage.value = 1; 
-
-    router.push({ query });
-}, {
-    deep: true
-})
-
-watch(currentPage, (val) => {
-    const query = {...route.query};
-
-    if(val && val > 1) {
-        query.page = val;
-    } else {
+    // Page
+    if(page && oldPage && (page === oldPage)) {
+        // Any filter is changed except the page number itself, so reset the page to 1
         delete query.page;
+        currentPage.value = 1;
+    } else {
+        // Regular page change
+        if(page > 1) {
+            query.page = page;
+        } else {
+            delete query.page;
+        }
     }
 
+    // Update the route query
     router.push({ query });
-})
+}, 
+{ deep: true });
 </script>
