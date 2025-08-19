@@ -32,7 +32,7 @@
             :href="vacancy.url" 
             target="_blank"
             rel="noopener noreferrer"
-            class="inline-block mt-auto rounded-full px-6 py-2 bg-primary text-white hover:bg-primary/70 transition-colors"
+            class="btn"
         >Bekijk vacature</a>
     </article>
 </template>
