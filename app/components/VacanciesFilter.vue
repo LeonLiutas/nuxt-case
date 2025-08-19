@@ -12,7 +12,7 @@
                         :id="location.toLowerCase()" 
                         :value="location.toLowerCase()" 
                         class="mr-2"
-                        v-model="selectedLocationsLocal"
+                        v-model="localFilters.locations"
                     >
                     {{ location }}
                 </label>
@@ -28,7 +28,7 @@
                         :id="department.toLowerCase()" 
                         :value="department.toLowerCase()" 
                         class="mr-2"
-                        v-model="selectedDepartmentsLocal"
+                        v-model="localFilters.departments"
                     >
                     {{ department }}
                 </label>
@@ -40,7 +40,7 @@
             type="search" 
             placeholder="Zoek op functietitel..." 
             class="border border-gray-300 rounded p-2 w-full bg-white mb-4"
-            v-model="searchQueryLocal"
+            v-model="localFilters.searchQuery"
         />
 
         <h3 class="text-xl font-bold">Aantal uren</h3>
@@ -50,7 +50,7 @@
             class="border border-gray-300 rounded p-2 w-full bg-white mb-4"
             :min="hours.min"
             :max="hours.max"
-            v-model.number="selectedHoursLocal"
+            v-model.number="localFilters.hours"
             step="4"
         />
 
@@ -61,26 +61,31 @@
                 placeholder="Min. salaris"
                 class="border border-gray-300 rounded p-2 w-full bg-white"
                 :min="salary.min"
-                :max="salary.max"
+                :max="localFilters.salary.max || salary.max"
                 step="500"
-                v-model.number="selectedSalaryLocal.min"
+                v-model.number="localFilters.salary.min"
             />
 
             <input 
                 type="number"
                 placeholder="Max. salaris"
                 class="border border-gray-300 rounded p-2 w-full bg-white"
-                :min="salary.min"
+                :min="localFilters.salary.min || salary.min"
                 :max="salary.max"
                 step="500"
-                v-model.number="selectedSalaryLocal.max"
+                v-model.number="localFilters.salary.max"
             />
         </div>
+
+        <button 
+            class="btn"
+            @click="resetSelectedFilters"
+        >Herstel alle filters</button>
     </div>
 </template>
 
 <script setup>
-import debounce from 'lodash/debounce'
+import debounce from 'lodash/debounce';
 
 const {
     departments, 
@@ -102,7 +107,7 @@ const {
     selectedLocations: Array,
     selectedSalary: Object,
     searchQuery: String,
-})
+});
 
 const emit = defineEmits([
     'update:selectedDepartments', 
@@ -110,65 +115,85 @@ const emit = defineEmits([
     'update:selectedLocations', 
     'update:selectedSalary',
     'update:searchQuery', 
-])
+    'resetSelectedFilters'
+]);
 
 // Local state for selected filters
-const selectedDepartmentsLocal = ref([...selectedDepartments])
-const selectedHoursLocal = ref(selectedHours)
-const selectedLocationsLocal = ref([...selectedLocations])
-const selectedSalaryLocal = reactive({
-    min: Number(selectedSalary.min) || null,
-    max: Number(selectedSalary.max) || null
-})
-const searchQueryLocal = ref(searchQuery)
+const localFilters = reactive({
+    departments: [...selectedDepartments],
+    hours: selectedHours,
+    locations: [...selectedLocations],
+    salary: {
+        min: Number(selectedSalary.min) || null,
+        max: Number(selectedSalary.max) || null,
+    },
+    searchQuery: searchQuery,
+});
 
-// Watch for changes in (local) state and emit updates
-// watch and update selectedDepartments
-watch(selectedDepartmentsLocal, (val) => {
-    emit('update:selectedDepartments', val)
-})
+// Logic for resetting filters
+const isResettingFilters = ref(false);
+
+const resetSelectedFilters = () => {
+    isResettingFilters.value = true;
+
+    localFilters.departments = [];
+    localFilters.hours = null;
+    localFilters.locations = [];
+    localFilters.salary.min = null;
+    localFilters.salary.max = null;
+    localFilters.searchQuery = '';
+
+    nextTick(() => {
+        isResettingFilters.value = false;
+
+        // Manually emit all filters to update the parent component
+        emitAllFilters();
+    });
+}
 
 // create handler function for hours filter to use debounce
 const updateSelectedHours = debounce((val) => {
-    emit('update:selectedHours', val)
-}, 350)
-
-// watch and update selectedHours
-watch(selectedHoursLocal, (val) => {
-    updateSelectedHours(val)
-})
-
-// watch and update selectedLocations
-watch(selectedLocationsLocal, (val) => {
-    emit('update:selectedLocations', val)
-})
+    emit('update:selectedHours', val);
+}, 350);
 
 // create handler function for salary filter to use debounce
-const updateSelectedSalary = debounce((val) => {    
-    emit('update:selectedSalary', val)
-}, 350)
-
-// watch and update selectedSalary (reactive)
-watch(() => selectedSalaryLocal, (val) => {
-    // Ensure max is not less than min
-    let { min, max } = val
-
-    if(max && min > max) {
-        selectedSalaryLocal.max = min;
-        max = min;
-    }
-    
-    updateSelectedSalary({ min, max });
-}, { 
-    deep: true 
-})
+const updateSelectedSalary = debounce((val) => {
+    emit('update:selectedSalary', val);
+}, 350);
 
 // create handler function for search query to use debounce
 const updateSearchQuery = debounce((val) => {
-    emit('update:searchQuery', val)
-}, 250)
+    emit('update:searchQuery', val);
+}, 350);
 
-watch(searchQueryLocal, (val) => {
-    updateSearchQuery(val)
-})
+// Store all emits in a single function, so we can call it when needed
+const emitAllFilters = () => {
+    // Update departments
+    emit('update:selectedDepartments', localFilters.departments);
+
+    // Update hours
+    updateSelectedHours(localFilters.hours);
+
+    // Update locations
+    emit('update:selectedLocations', localFilters.locations);
+
+    // Update salary
+    updateSelectedSalary(localFilters.salary);
+
+    // Update search query
+    updateSearchQuery(localFilters.searchQuery);
+}
+
+// Watch for changes in local filters and emit them to the parent component
+watch(
+    () => localFilters,
+    () => {
+        // If we are resetting filters, skip the update
+        if (isResettingFilters.value) return;
+
+        emitAllFilters();
+    }, { 
+        deep: true,
+    },
+)
 </script>
