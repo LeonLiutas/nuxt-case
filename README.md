@@ -1,75 +1,41 @@
-# Nuxt Minimal Starter
+# Nuxt Case — Vacancy Overview with Filtering & Pagination
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+This project demonstrates a Nuxt 4 application that implements a job vacancy overview page. Users can filter and paginate through job listings, which are fetched from an external API. The goal is to showcase integration with external data sources, dynamic filtering, and efficient pagination using Nuxt 4, Nuxt Server Routes, and TailwindCSS. Optimal TypeScript support is a work in progress.
 
-## Setup
+## Features
 
-Make sure to install dependencies:
+- Vacancy overview page with real-time filtering and pagination
+- Data fetched from an external API via Nuxt Server API routes
+- Basic responsive UI styled with TailwindCSS
+- Modular structure for easy extension
 
-```bash
-# npm
-npm install
+## Getting Started
 
-# pnpm
-pnpm install
+### Prerequisites
+- Node.js (version 20.19.x or later)
+- npm
 
-# yarn
-yarn install
+### Setup project
+1. Clone the repository.
+2. Copy `.env.example` to `.env` and fill in the required environment variables (such as API endpoints or keys).
+3. Install dependencies:
+    ```bash
+    npm install
+    ```
+4. Run the development server:
+    ```bash
+    npm run dev
+    ```
 
-# bun
-bun install
-```
+## Tech Stack
 
-## Development Server
+- [Nuxt 4](https://nuxt.com/)
+- [Nuxt Server Routes](https://nuxt.com/docs/guide/directory-structure/server)
+- [TailwindCSS](https://tailwindcss.com/)
+- TypeScript (partial, work in progress)
 
-Start the development server on `http://localhost:3000`:
+#### Nuxt Modules Used
 
-```bash
-# npm
-npm run dev
+- `@nuxt/fonts`
+- `@nuxt/icon`
 
-# pnpm
-pnpm dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
-```
-
-## Production
-
-Build the application for production:
-
-```bash
-# npm
-npm run build
-
-# pnpm
-pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
-```
-
-Locally preview production build:
-
-```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
-```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
