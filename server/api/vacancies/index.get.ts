@@ -35,6 +35,7 @@ export default eventHandler(async (event) => {
         .map((vacancy: any) => ({
             title: vacancy.title || '',
             location: vacancy.state_name || '',
+            city: vacancy.city || '',
             experience: vacancy.experience_code ? VacancyLevel[vacancy.experience_code as keyof typeof VacancyLevel] || '' : '',
             url: vacancy.careers_url || '',
             min_hours: vacancy.min_hours || vacancy.min_hours_per_week || '',

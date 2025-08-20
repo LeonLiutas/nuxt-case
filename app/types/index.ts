@@ -1,6 +1,7 @@
 export interface Vacancy {
     title: string;
     location: string;
+    city: string;
     experience: typeof VacancyLevel | string;
     url: string;
     min_hours: number;

@@ -21,6 +21,7 @@
             </li>
             <li v-if="vacancy.location">
                 <Icon name="ion:location-sharp" />
+                <span v-if="vacancy.city">{{ vacancy.city }}, </span>
                 <span>{{ vacancy.location }}</span>
             </li>
             <li v-if="vacancy.min_hours || vacancy.max_hours">
