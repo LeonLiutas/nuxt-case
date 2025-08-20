@@ -3,7 +3,7 @@
         :to="vacancy.slug ? `/vacature/${vacancy.slug}` : ''"
     >
         <article 
-            class="flex flex-col items-start border border-gray-200 p-4 bg-white rounded-lg transition-transform duration-300"
+            class="h-full flex flex-col items-start border border-gray-200 p-4 bg-white rounded-lg transition-transform duration-300"
             :class="vacancy.slug ? 'cursor-pointer group hover:-translate-y-1' : 'cursor-default'"
         >
             <h3 class="hyphens-auto">

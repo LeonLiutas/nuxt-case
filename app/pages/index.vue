@@ -1,6 +1,6 @@
 <template>
     <div class="grid grid-cols-12 lg:gap-8 xl:gap-16">
-        <div class="col-span-12 lg:col-span-3">
+        <div class="mb-8 lg:mb-0 col-span-12 lg:col-span-3">
             <VacanciesFilter 
                 :departments
                 :hours
