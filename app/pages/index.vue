@@ -1,38 +1,41 @@
 <template>
-    <div>
-        <div class="grid grid-cols-12 gap-8">
-            <div class="col-span-12 lg:col-span-3">
-                <VacanciesFilter 
-                    :departments
-                    :hours
-                    :locations
-                    :salary
+    <div class="grid grid-cols-12 lg:gap-8 xl:gap-16">
+        <div class="col-span-12 lg:col-span-3">
+            <VacanciesFilter 
+                :departments
+                :hours
+                :locations
+                :salary
 
-                    v-model:selectedDepartments="selectedDepartments"
-                    v-model:selectedHours="selectedHours"
-                    v-model:selectedLocations="selectedLocations"
-                    v-model:searchQuery="searchQuery"
+                v-model:selectedDepartments="selectedDepartments"
+                v-model:selectedHours="selectedHours"
+                v-model:selectedLocations="selectedLocations"
+                v-model:searchQuery="searchQuery"
 
-                    :selectedSalary
-                    @update:selectedSalary="val => Object.assign(selectedSalary, val)"
+                :selectedSalary
+                @update:selectedSalary="val => Object.assign(selectedSalary, val)"
+            />
+        </div>
+
+        <div class="col-span-12 lg:col-span-9">
+            <h2 class="text-3xl mb-6 flex items-start gap-2">
+                Openstaande vacatures
+                <span class="bg-red-500 text-white rounded-full p-1 text-[8px] font-bold">{{ data.meta.total }}</span>
+            </h2>
+
+            <div v-if="pending">Laden...</div>
+            <div v-else-if="error">Error bij het laden van de vacatures: {{ error.message }}</div>
+            <div v-else-if="!vacancies.length">Geen vacatures gevonden</div>
+            <div v-else>
+                <VacanciesList 
+                    :vacancies
+                    :meta="data.meta"
                 />
-            </div>
-
-            <div class="col-span-12 lg:col-span-9">
-                <div v-if="pending">Loading...</div>
-                <div v-else-if="error">Error loading vacancies: {{ error.message }}</div>
-                <div v-else-if="!vacancies.length">Geen vacatures gevonden</div>
-                <div v-else>
-                    <VacanciesList 
-                        :vacancies
-                        :meta="data.meta"
-                    />
-                    <Pagination
-                        v-if="pagination && pagination.maxPage > 1"
-                        :pagination
-                        v-model:currentPage="currentPage"
-                    />
-                </div>
+                <Pagination
+                    v-if="pagination && pagination.maxPage > 1"
+                    :pagination
+                    v-model:currentPage="currentPage"
+                />
             </div>
         </div>
     </div>

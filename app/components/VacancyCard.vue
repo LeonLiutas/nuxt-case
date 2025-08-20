@@ -1,6 +1,9 @@
 <template>
-    <article class="flex flex-col items-start bg-white rounded-lg shadow-md/5 p-4">
-        <h3 class="text-xl font-bold text-primary">
+    <article 
+        class="flex flex-col items-start border border-gray-200 p-4 bg-white rounded-lg cursor-pointer group hover:-translate-y-1 transition-transform duration-300"
+        @click="gotoVacancy(vacancy.url)"
+    >
+        <h3 class="hyphens-auto">
             {{ vacancy.title }}
         </h3>
 
@@ -11,20 +14,26 @@
             {{ vacancy.experience }}
         </span>
 
-        <ul class="my-4">
-            <li v-if="vacancy.location"><strong>Locatie:</strong> {{ vacancy.location }}</li>
+        <ul class="my-4 text-sm [&_.iconify]:text-secondary [&_.iconify]:inline-block [&_.iconify]:mr-2">
+            <li v-if="vacancy.department">
+                <Icon name="ion:business-sharp" />
+                <span>{{ vacancy.department }}</span>
+            </li>
+            <li v-if="vacancy.location">
+                <Icon name="ion:location-sharp" />
+                <span>{{ vacancy.location }}</span>
+            </li>
             <li v-if="vacancy.min_hours || vacancy.max_hours">
-                <strong>Uren per week: </strong> 
+                <Icon name="ion:time-sharp" />
                 <span v-if="vacancy.min_hours">{{ vacancy.min_hours }} </span>
                 <span v-if="vacancy.max_hours"> tot {{ vacancy.max_hours }}</span>
                 <span> uur</span>
             </li>
             <li v-if="vacancy.salary_min || vacancy.salary_max">
-                <strong>Salaris: </strong> 
-                <span v-if="vacancy.salary_min"> vanaf €{{ vacancy.salary_min }} </span>
+                <Icon name="ion:logo-euro" />
+                <span v-if="vacancy.salary_min">vanaf €{{ vacancy.salary_min }} </span>
                 <span v-if="vacancy.salary_max"> tot €{{ vacancy.salary_max }}</span>
             </li>
-            <li v-if="vacancy.department"><strong>Afdeling:</strong> {{ vacancy.department }}</li>
         </ul>
 
         <a 
@@ -32,11 +41,16 @@
             :href="vacancy.url" 
             target="_blank"
             rel="noopener noreferrer"
-            class="btn"
+            class="btn group-hover:bg-primary/70"
+            @click.prevent
         >Bekijk vacature</a>
     </article>
 </template>
 
 <script setup>
 const props = defineProps(['vacancy'])
+
+const gotoVacancy = (url) => {
+    window.open(url, '_blank', 'noopener,noreferrer');
+}
 </script>

@@ -1,61 +1,63 @@
 <template>
-    <h2 class="text-3xl font-bold mb-6 flex items-start gap-2">Filters</h2>
+    <h2 class="mb-6">Filters</h2>
 
-    <div>
-        <h3 class="text-xl font-bold">Locaties</h3>
-
-        <ul class="mb-4">
+    <FilterGroup title="Locaties">
+        <ul class="[&:has(input:checked)]:text-gray-400">
             <li v-for="location in locations">
                 <label :for="location.toLowerCase()">
                     <input 
                         type="checkbox"
                         :id="location.toLowerCase()" 
                         :value="location.toLowerCase()" 
-                        class="mr-2"
+                        class="mr-2 peer"
                         v-model="localFilters.locations"
                     >
-                    {{ location }}
+                    <span class="peer-checked:text-black">{{ location }}</span>
                 </label>
             </li>
         </ul>
+    </FilterGroup>
 
-        <h3 class="text-xl font-bold">Afdelingen</h3>
-        <ul class="mb-4">
+    <FilterGroup title="Afdelingen">
+        <ul class="[&:has(input:checked)]:text-gray-400">
             <li v-for="department in departments">
                 <label :for="department.toLowerCase()">
                     <input 
                         type="checkbox"
                         :id="department.toLowerCase()" 
                         :value="department.toLowerCase()" 
-                        class="mr-2"
+                        class="mr-2 peer"
                         v-model="localFilters.departments"
                     >
-                    {{ department }}
+                    <span class="peer-checked:text-black">{{ department }}</span>
                 </label>
             </li>
         </ul>
+    </FilterGroup>
 
-        <h3 class="text-xl font-bold">Zoeken</h3>
+    <FilterGroup title="Zoeken">
         <input 
             type="search" 
             placeholder="Zoek op functietitel..." 
-            class="border border-gray-300 rounded p-2 w-full bg-white mb-4"
+            class="border border-gray-300 rounded p-2 w-full bg-white"
             v-model="localFilters.searchQuery"
         />
+    </FilterGroup>
 
-        <h3 class="text-xl font-bold">Aantal uren</h3>
+    <FilterGroup title="Aantal uren">
         <input 
             type="number"
             :placeholder="`Aantal uren per week (${hours.min} - ${hours.max})`"
-            class="border border-gray-300 rounded p-2 w-full bg-white mb-4"
+            class="border border-gray-300 rounded p-2 w-full bg-white"
             :min="hours.min"
             :max="hours.max"
             v-model.number="localFilters.hours"
             step="4"
         />
+    </FilterGroup>
 
-        <h3 class="text-xl font-bold">Salaris</h3>
-        <div class="flex gap-4 mb-4">
+    <FilterGroup title="Salaris" class="mb-8">
+        <div class="flex gap-4">
             <input 
                 type="number"
                 placeholder="Min. salaris"
@@ -76,12 +78,12 @@
                 v-model.number="localFilters.salary.max"
             />
         </div>
+    </FilterGroup>
 
-        <button 
-            class="btn"
-            @click="resetSelectedFilters"
-        >Herstel alle filters</button>
-    </div>
+    <button 
+        class="btn btn--neutral"
+        @click="resetSelectedFilters"
+    >Alle filters wissen</button>
 </template>
 
 <script setup>

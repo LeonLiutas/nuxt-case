@@ -1,9 +1,9 @@
 <template>
-    <div class="min-h-screen bg-gray-100">
+    <main class="min-h-screen bg-gray-100 p-4 lg:p-8 font-display">
         <AppHeader />
 
-        <main class="p-8">
+        <div class="px-0 py-8 lg:p-16">
             <slot />
-        </main>
-    </div>
+        </div>
+    </main>
 </template>

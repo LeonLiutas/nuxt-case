@@ -1,5 +1,6 @@
 <template>
-    <header class="bg-white px-8 py-4 border-b border-gray-200 shadow-md/5">
-        <h1 class="text-3xl font-bold text-primary">REBO Groep</h1>
+    <header class="bg-secondary p-4 lg:p-16 xl:py-24 rounded-lg">
+        <h1 class="text-white mb-8">Werken bij REBO Groep</h1>
+        <p class="text-white">Vind de baan die bij jou past en geef je carrière een vliegende start.</p>
     </header>
 </template>
