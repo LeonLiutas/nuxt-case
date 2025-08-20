@@ -1,5 +1,7 @@
 export interface Vacancy {
+    slug: string;
     title: string;
+    description: string;
     location: string;
     city: string;
     experience: typeof VacancyLevel | string;

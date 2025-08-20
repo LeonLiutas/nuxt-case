@@ -33,7 +33,9 @@ export default eventHandler(async (event) => {
     const vacancies: Vacancy[] = response
         .filter((vacancy: any) => vacancy.status === 'published') // Filter only published vacancies
         .map((vacancy: any) => ({
+            slug: vacancy.slug || '',
             title: vacancy.title || '',
+            description: vacancy.description || '',
             location: vacancy.state_name || '',
             city: vacancy.city || '',
             experience: vacancy.experience_code ? VacancyLevel[vacancy.experience_code as keyof typeof VacancyLevel] || '' : '',
@@ -46,6 +48,22 @@ export default eventHandler(async (event) => {
             position: vacancy.position || 0, // position in order
         }))
         .sort((a, b) => a.position - b.position) // Order by position according to the Recruitee API
+
+    // If a slug is provided, return the specific vacancy
+    const slug = query.slug ? String(query.slug).toLowerCase() : null;
+
+    if(slug) {
+        const vacancy = vacancies.find(v => v.slug === slug);
+
+        if(!vacancy) {
+            throw createError({
+                statusCode: 404,
+                statusMessage: 'Vacancy not found',
+            });
+        }
+
+        return vacancy;
+    }
 
     // Create a filtered list of vacancies based on the query parameters
     const filteredVacancies = vacancies
